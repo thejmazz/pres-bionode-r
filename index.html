@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Title</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+
+      img {
+        max-width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+# BioNode and R
+
+## *in bioinformatics*
+
+[@thejmazz](https://twitter.com/thejmazz)
+
+---
+
+# Why use JavaScript or R?
+
+JavaScript
+- cross-platform UX: web and native (via [Electron](http://electron.atom.io/))
+- strong web-dev community, npm
+- fs library, built with streams, events, and around async
+- non-blocking, evented loop means it can handle many simulateneous requests
+
+R
+- built in support for reading common filetypes, many parsing packages
+- object types for working with large datasets
+- large, long running projects such as Bioconductor
+- access to C libs, but with strong integration to native types (such as data frames)
+
+---
+
+# Alternatives
+
+### Python
+
+- SciPY, NumPy, Pandas, ML libs (Theano, Tern)
+- BioPython
+
+---
+
+# BioNode
+
+### pipeable UNIX command line tools and JavaScript APIs for bioinformatic analysis workflows
+
+```bash
+$ npm install -g bionode
+```
+
+[ncbi](https://github.com/bionode/bionode-ncbi), [fasta](https://github.com/bionode/bionode-fasta),
+[seq](https://github.com/bionode/bionode-seq), [ensembl](https://github.com/daviddao/biojs-rest-ensembl),
+[blast-parser](https://github.com/greenify/biojs-io-blast)
+
+[more in development](https://github.com/bionode/bionode#list-of-modules)
+
+---
+
+# R
+
+### statistical analysis package
+
+[igraph](http://igraph.org/r/),
+[jsonlite](https://cran.r-project.org/web/packages/jsonlite/index.html)
+
+---
+
+# Bioconductor
+
+### provides tools for the analysis and comprehension of high-throughput genomic data
+
+[biomaRt](https://www.bioconductor.org/packages/release/bioc/html/biomaRt.html),
+[Biostrings](https://www.bioconductor.org/packages/release/bioc/html/Biostrings.html)
+[BSgenome](https://www.bioconductor.org/packages/release/bioc/html/BSgenome.html),
+[epivizr](https://www.bioconductor.org/packages/release/bioc/html/epivizr.html),
+[GenomicFeatures](https://www.bioconductor.org/packages/release/bioc/html/GenomicFeatures.html),
+[GenomicRanges](https://www.bioconductor.org/packages/release/bioc/html/GenomicRanges.html),
+[graph](https://www.bioconductor.org/packages/release/bioc/html/graph.html),
+[Gviz](https://www.bioconductor.org/packages/release/bioc/html/Gviz.html),
+[IRanges](https://www.bioconductor.org/packages/release/bioc/html/IRanges.html),
+[RBGL](https://www.bioconductor.org/packages/release/bioc/html/RBGL.html),
+[Rgraphviz](https://www.bioconductor.org/packages/release/bioc/html/Rgraphviz.html)
+
+[Bioconductor workflows](https://www.bioconductor.org/help/workflows/)
+
+[igraph](http://igraph.org/r/),
+[jsonlite](https://cran.r-project.org/web/packages/jsonlite/index.html)
+
+---
+
+# data-analysis-viz example web app
+
+- accesses the NCBI with [bionode-ncbi][bionode-ncbi]
+- performs a multiple sequence alignment with [muscle][muscle] through [msa][msa]
+- visualizes the results with [biojs-msa][biojs-msa]
+
+[Full Tutorial](https://github.com/thejmazz/js-bioinformatics-exercise)
+
+![biojs-msa-pic](https://github.com/thejmazz/js-bioinformatics-exercise/raw/master/img/msa2.png)
+
+---
+
+# setting up the project
+
+```bash
+$ npm init
+$ npm install --save
+```
+
+---
+
+# bionode-ncbi
+
+![bionode-ncbi-pic](https://github.com/thejmazz/js-bioinformatics-exercise/raw/master/img/bionode-ncbi-api.png)
+
+---
+
+# search
+
+```js
+var ncbi = require('bionode-ncbi');
+var fs = require('fs');
+
+var query = ncbi.search('protein', 'mbp1');
+
+function dataLogger(data) {
+    // Assumes `data` directory already exists
+    var fileName = 'data/' + data.uid + '.json';
+    fs.writeFileSync(fileName, JSON.stringify(data));
+    console.log('Wrote ' + fileName);
+}
+
+query.on('data', dataLogger);
+```
+
+---
+
+# express static server
+
+```js
+var express = require('express');
+var serveIndex = require('serve-index');
+
+var app = express();
+
+app.use(serveIndex('data'));
+app.use(express.static('data'));
+
+app.listen(3000);
+
+console.log('Express server listening on port 3000');
+```
+
+---
+
+# NCBI Fetch
+
+```bash
+$ npm install -g bionode-ncbi
+$ bionode-ncbi fetch protein 1431055
+```
+
+```
+{
+    "id":"gi|1431055|emb|CAA98618.1| MBP1 [Saccharomyces cerevisiae]",
+    "seq":"MSNQIYSARYSGVDVYEFIHSTGSIMKRKKDDWVNATHILKAANFAKAKRTRILEKEVLKETHEKVQGGFGKYQGTWVPLNIAKQLAEKFSVYDQLKPLFDFTQTDGSASPPPAPKHHHASKVDRKKAIRSASTSAIMETKRNNKKAEENQFQSSKILGNPTAAPRKRGRPVGSTRGSRRKLGVNLQRSQSDMGFPRPAIPNSSISTTQLPSIRSTMGPQSPTLGILEEERHDSRQQQPQQNNSAQFKEIDLEDGLSSDVEPSQQLQQVFNQNTGFVPQQQSSLIQTQQTESMATSVSSSPSLPTSPGDFADSNPFEERFPGGGTSPIISMIPRYPVTSRPQTSDINDKVNKYLSKLVDYFISNEMKSNKSLPQVLLHPPPHSAPYIDAPIDPELHTAFHWACSMGNLPIAEALYEAGTSIRSTNSQGQTPLMRSSLFHNSYTRRTFPRIFQLLHETVFDIDSQSQTVIHHIVKRKSTTPSAVYYLDVVLSKIKDFSPQYRIELLLNTQDKNGDTALHIASKNGDVVFFNTLVKMGALTTISNKEGLTANEIMNQQYEQMMIQNGTNQHVNSSNTDLNIHVNTNNIETKNDVNSMVIMSPVSPSDYITYPSQIATNISRNIPNVVNSMKQMASIYNDLHEQHDNEIKSLQKTLKSISKTKIQVSLKTLEVLKESSKDENGEAQTNDDFEILSRLQEQNTKKLRKRLIRYKRLIKQKLEYRQTVLLNKLIEDETQATTNNTVEKDNNTLERLELAQELTMLQLQRKNKLSSLVKKFEDNAKIHKYRRIIREGTEMNIEEVDSSLDVILQTLIANNNKNKGAEQIITISNANSHA"
+}
+```
+
+---
+
+# Pipes
+
+```js
+var ncbi = require('bionode-ncbi');
+var es = require('event-stream');
+var filter = require('through2-filter');
+
+ncbi.search('protein', 'mbp1')
+    .pipe(filter.obj(function (obj) {
+        return obj.title.match(/^mbp1p?.*\[.*\]$/i);
+    }))
+    .pipe(es.through(function (data) {
+        this.emit('data', data.title + '\n');
+    }))
+    .pipe(process.stdout);
+```
+
+Produces this [output](https://github.com/thejmazz/js-bioinformatics-exercise/blob/master/outputs/piped1.txt)
+
+---
+
+# piped2.js
+
+```js
+var concatStream = concat(function(array) {
+    console.log(array);
+});
+
+var species = [];
+
+ncbi.search('protein', 'mbp1')
+    .pipe(filter.obj(function (obj) {
+        return obj.title.match(/^mbp1p?.*\[.*\]$/i);
+    }))
+    .pipe(filter.obj(function (obj) {
+        var specieName = obj.title.substring(obj.title.indexOf('[') + 1, obj.title.length-1);
+        specieName = specieName.split(' ').slice(0,1).join(' ');
+        if (species.indexOf(specieName) >= 0) {
+            return false;
+        } else {
+            species.push(specieName);
+            return true;
+        }
+    }))
+    .pipe(tool.extractProperty('gi'))
+    .pipe(ncbi.fetch('protein'))
+    .pipe(concatStream);
+```
+
+produces this [output](https://github.com/thejmazz/js-bioinformatics-exercise/blob/master/outputs/piped2.txt)
+
+---
+
+# Into the browser
+
+```bash
+$ npm install -g browserify
+$ browserify piped2.js -o public/bundle.js --debug -r fs:browserify-fs
+```
+
+`public/index.html`, ([msa.min.css](https://cdn.biojs.net/msa/0.3/msa.min.gz.css))
+
+```html
+<!doctype html>
+<html>
+    <head>
+        <title biojs msa visualization> </title>
+        <link rel="stylesheet" href="msa.min.css" />
+    </head>
+    <body>
+        <script src="bundle.js"></script>
+    </body>
+</html>
+```
+
+`server.js`
+```js
+app.use('/data', serveIndex('data'));
+app.use('/data', express.static('data'));
+
+app.use(express.static('public'));
+```
+
+---
+
+# fixing bug!
+
+Node code into the browser may not always be a clean migration..
+
+`node_modules/bionode-ncbi/node_modules/nugget/package.json`:
+
+```json
+"browser": {
+    "single-line-log": false
+}
+```
+
+---
+
+# BioJS: MSA
+
+`msa.js`:
+
+```js
+var msa = require("msa");
+// other requires from piped2.js
+
+var msaDiv = document.createElement('div');
+document.body.appendChild(msaDiv);
+
+var concatStream = concat(function(sequences) {
+    sequences = sequences.map(function(seq) {
+        var props = seq.id.split('|');
+        seq.id = props[1];
+        seq.name = props[4];
+        return seq;
+    });
+
+    console.log(sequences);
+    var m = new msa({
+        el: msaDiv,
+        seqs: sequences
+    });
+    m.render();
+});
+
+// ncbi.search from piped2.js
+```
+
+---
+
+# Bioconductor: msa
+
+`msa.r`:
+
+```r
+# Open stdin connection
+stdin <- file("stdin")
+open(stdin)
+
+# jsonlite parse stdin ndjson into data frame
+seqs <- stream_in(stdin, verbose=FALSE)
+
+# Create AAStringSet vector out of sequences
+seqSet <- AAStringSet(c(seqs$seq))
+# Make sure to set names so we can identify later!
+seqSet@ranges@NAMES <- seqs$id
+
+# Compute alignment with MUSCLE
+msa <- msaMuscle(seqSet, order="aligned")
+
+# Alter values in seqs data frame
+for (i in 1:nrow(msa)) {
+    seqs$id[i] = msa@unmasked@ranges@NAMES[i]
+    seqs$seq[i] = as.character(msa@unmasked[i][[1]])
+}
+
+# Back to stdout
+stream_out(seqs, verbose=FALSE)
+```
+
+`chmod u+x msa.r`
+
+---
+
+### `streamMsa.js` (1)
+
+```js
+function getProteinSeqs(req, res, next) {
+    var opts = req.opts;
+
+    // var species = [];
+    var rMSA = cp.spawn('/Users/jmazz/r/js-bioinformatics-exercise/msa.r');
+
+    var stream = ncbi.search('protein', opts.query);
+
+    opts.filters.forEach(function (f) {
+        stream = stream.pipe(filter.obj(f));
+    });
+
+    if (opts.uniqueSpecies) {
+        // This will actually belong to scope of function
+        var species=[];
+
+        stream = stream
+            .pipe(filter.obj(function (obj) {
+                var specieName = obj.title.substring(obj.title.indexOf('[') + 1, obj.title.length-1);
+                specieName = specieName.split(' ').slice(0,1).join(' ');
+                if (species.indexOf(specieName) >= 0) {
+                    return false;
+                } else {
+                    species.push(specieName);
+                    return true;
+                }
+            }));
+    }
+```
+
+---
+
+### `streamMsa.js` (2)
+
+```js
+    stream
+        .pipe(tool.extractProperty('gi'))
+        .pipe(ncbi.fetch('protein'))
+        .pipe(es.through(function (obj) {
+            this.emit('data', JSON.stringify(obj) + '\n');
+        }))
+        .pipe(rMSA.stdin);
+
+    var seqs=[];
+    rMSA.stdout
+        .pipe(ndjson.parse())
+        .on('data', function(data) {
+            seqs.push(data);
+        })
+        .on('end', function() {
+            res.send({
+                seqs: seqs
+            });
+        });
+}
+
+module.exports = {
+    getProteinSeqs: getProteinSeqs,
+    propMatchRegex: propMatchRegex
+};
+```
+
+---
+
+### `GET /aligned`
+
+```js
+var sMsa = require('./streamMsa');
+var propMatchRegex = sMsa.propMatchRegex;
+var getProteinSeqs = sMsa.getProteinSeqs;
+
+// e.g. /aligned?q=mbp1
+app.get('/aligned', [
+    function (req, res, next) {
+        req.opts = {
+            query: req.query.q,
+            vars: {
+                species: []
+            },
+            filters: [
+                function(obj) {
+                    // e.g. /^mbp1.*\[.*\]$/i)
+                    var regex = new RegExp('^' + req.query.q + '.*\\[.*\\]$', 'i');
+                    return propMatchRegex(obj, 'title', regex);
+                }
+            ],
+            uniqueSpecies: true
+        };
+
+        next();
+    },
+    getProteinSeqs
+]);
+```
+
+---
+
+`msa.js`:
+
+```js
+function runFetch() {
+    $.get('http://localhost:3000/aligned?q=' + $('#query').val()).then(function(data) {
+        createMSAViz(data.seqs);
+    });
+}
+
+$('#submit').on('click', function() {
+    msaDiv.innerHTML = 'Loading...';
+    runFetch();
+});
+```
+
+```html
+<input type="text" id="query" placeholder="query"></input>
+<button id="submit">Go</button>
+```
+
+![biojs-msa-pic](https://github.com/thejmazz/js-bioinformatics-exercise/raw/master/img/msa2.png)
+
+[bionode-ncbi]:https://github.com/bionode/bionode-ncbi
+[biojs-msa]:http://msa.biojs.net/
+[muscle]:http://www.biomedcentral.com/content/pdf/1471-2105-5-113.pdf
+[msa]:https://bioconductor.org/packages/release/bioc/html/msa.html
+    </textarea>
+    <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
